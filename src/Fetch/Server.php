@@ -346,29 +346,14 @@ class Server
     }
 
     /**
-     * Returns the emails in the current mailbox as an array of ImapMessage objects.
+     * Returns the emails in the current mailbox as a MessageIterator objects.
      *
      * @param  null|int  $limit
-     * @return Message[]
+     * @return MessageIterator
      */
     public function getMessages($limit = null)
     {
-        $numMessages = $this->numMessages();
-
-        if (isset($limit) && is_numeric($limit) && $limit < $numMessages)
-            $numMessages = $limit;
-
-        if ($numMessages < 1)
-            return array();
-
-        $stream   = $this->getImapStream();
-        $messages = array();
-        for ($i = 1; $i <= $numMessages; $i++) {
-            $uid        = imap_uid($stream, $i);
-            $messages[] = new Message($uid, $this);
-        }
-
-        return $messages;
+        return new MessageIterator($this, $limit);
     }
 
     /**
@@ -380,11 +365,23 @@ class Server
     public function getMessageByUid($uid)
     {
         try {
-            $message = new \Fetch\Message($uid, $this);
+            $message = new Message($uid, $this);
             return $message;
         }catch(\Exception $e){
             return false;
         }
+    }
+
+    /**
+     * Returns the requested email for the given message sequence number.
+     *
+     * @param int $number
+     *
+     * @return Message|bool
+     */
+    public function getMessageBySequenceNumber($number) {
+        $uid = imap_uid($this->getImapStream(), $number);
+        return $this->getMessageByUid($uid);
     }
 
 
