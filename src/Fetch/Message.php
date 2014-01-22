@@ -201,7 +201,7 @@ class Message
         if(!is_object($messageOverview = $this->getOverview()))
             return false;
 
-        $this->subject = $messageOverview->subject;
+        $this->subject = isset($messageOverview->subject) ? $messageOverview->subject : null;
         $this->date    = strtotime($messageOverview->date);
         $this->size    = $messageOverview->size;
 
@@ -392,7 +392,7 @@ class Message
      */
     public function getSubject()
     {
-        return isset($this->subject) ? $this->subject : null;
+        return $this->subject;
     }
 
     /**
