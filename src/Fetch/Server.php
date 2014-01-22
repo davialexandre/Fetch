@@ -412,6 +412,32 @@ class Server
     }
 
     /**
+     * Returns a list of mailboxes
+     *
+     * @param string $pattern A pattern according to PHP's imap_list
+     *
+     * @return array|void a list of mailboxes
+     */
+    public function listMailboxes($pattern = '*') {
+        $mailboxes = imap_listmailbox(
+            $this->getImapStream(),
+            $this->getServerString(),
+            $pattern
+        );
+
+        if(is_array($mailboxes)) {
+            array_walk(
+                $mailboxes,
+                function(&$mailbox) {
+                    $mailbox = str_replace($this->getServerString(), '', $mailbox);
+                }
+            );
+        }
+
+        return $mailboxes;
+    }
+
+    /**
      * Creates the given mailbox.
      *
      * @param $mailbox
