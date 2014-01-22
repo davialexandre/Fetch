@@ -567,14 +567,31 @@ class Message
     protected function processAddressObject($addresses)
     {
         $outputAddresses = array();
-        if (is_array($addresses))
+        if (is_array($addresses)) {
             foreach ($addresses as $address) {
                 $currentAddress            = array();
-                $currentAddress['address'] = $address->mailbox . '@' . $address->host;
-                if (isset($address->personal))
+                $addressParts              = array();
+                if(isset($address->mailbox) && !empty($address->mailbox)) {
+                    $addressParts[] = $address->mailbox;
+                }
+
+                if(isset($address->host) && !empty($address->host)) {
+                    $addressParts[] = $address->host;
+                }
+
+                if(!empty($addressParts)) {
+                    $currentAddress['address'] = implode('@', $addressParts);
+                }
+
+                if (isset($address->personal)) {
                     $currentAddress['name'] = $address->personal;
-                $outputAddresses[] = $currentAddress;
+                }
+
+                if(isset($currentAddress['address']) || isset($currentAddress['address'])) {
+                    $outputAddresses[] = $currentAddress;
+                }
             }
+        }
 
         return $outputAddresses;
     }
