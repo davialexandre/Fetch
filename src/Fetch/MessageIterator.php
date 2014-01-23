@@ -4,20 +4,39 @@ namespace Fetch;
 class MessageIterator implements \Iterator, \Countable {
 
     /**
+     * Server instance used to fetch messages
+     *
      * @var Server
      */
     protected $server;
 
     /**
+     * The current Iterator position
+     *
      * @param int
      */
     protected $position;
+
+    /**
+     * The start position of the Iterator
+     *
+     * @param int
+     */
+    protected $start;
+
+    /**
+     * The number of itens in the Iterator
+     *
+     * @param int
+     */
+    protected $size;
 
     /**
      * The number of messages in the mailbox in the moment of the interator instantiation
      * @param int
      */
     protected $numberOfMessages;
+
 
     /**
      * Create a new MessageIterator.
@@ -26,14 +45,23 @@ class MessageIterator implements \Iterator, \Countable {
      *
      * @param Server $server a Server instance which will be used to fetch the messages
      * @param int|null $size the max number of messages in the iterator. If null, the number of messages in the server will be used
+     * @param int $start the start position/sequence number of the Interator
      */
-    public function __construct($server, $size = null) {
+    public function __construct($server, $size = null, $start = 1)
+    {
         $this->server = $server;
-        $this->position = 1;
-        $this->numberOfMessages = $this->server->numMessages();
-        if($size && is_numeric($size) && $size <= $this->numberOfMessages) {
-            $this->numberOfMessages = $size;
+        if(!is_numeric($start) || $start < 1) {
+            $start = 1;
         }
+        $this->start = $start;
+        $this->position = $this->start;
+        $this->numberOfMessages = $this->server->numMessages();
+        if(!$size || !is_numeric($size) || (($size + ($this->start - 1)) > $this->numberOfMessages)) {
+            $this->size = $this->numberOfMessages - ($this->start - 1);
+        } else {
+            $this->size = $size;
+        }
+
     }
 
     /**
@@ -72,7 +100,7 @@ class MessageIterator implements \Iterator, \Countable {
      */
     public function valid()
     {
-        return $this->position > 0 && $this->position <= $this->numberOfMessages;
+        return $this->position >= $this->start && $this->position < $this->start + $this->size;
     }
 
     /**
@@ -80,7 +108,7 @@ class MessageIterator implements \Iterator, \Countable {
      */
     public function rewind()
     {
-        $this->position = 1;
+        $this->position = $this->start;
     }
 
     /**
@@ -90,6 +118,6 @@ class MessageIterator implements \Iterator, \Countable {
      */
     public function count()
     {
-        return $this->numberOfMessages;
+        return $this->size;
     }
 }

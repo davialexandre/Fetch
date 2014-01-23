@@ -349,11 +349,12 @@ class Server
      * Returns the emails in the current mailbox as a MessageIterator objects.
      *
      * @param  null|int  $limit
+     * @param int $start the sequence number from where the iterator will start to fetch messages
      * @return MessageIterator
      */
-    public function getMessages($limit = null)
+    public function getMessages($limit = null, $start = 1)
     {
-        return new MessageIterator($this, $limit);
+        return new MessageIterator($this, $limit, $start);
     }
 
     /**
@@ -379,7 +380,8 @@ class Server
      *
      * @return Message|bool
      */
-    public function getMessageBySequenceNumber($number) {
+    public function getMessageBySequenceNumber($number)
+    {
         $uid = imap_uid($this->getImapStream(), $number);
         return $this->getMessageByUid($uid);
     }
